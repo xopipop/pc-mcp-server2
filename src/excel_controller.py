@@ -82,7 +82,7 @@ class ExcelController:
                 self.excel_app.Visible = self.visible
                 self.excel_app.DisplayAlerts = self.display_alerts
                 self.excel_app.EnableEvents = True
-                self.excel_app.Calculation = constants.xlCalculationAutomatic
+                # Пропускаем установку Calculation, так как она может вызвать ошибки
                 
                 self._initialized = True
                 logger.info("Excel контроллер успешно инициализирован")
@@ -172,7 +172,7 @@ class ExcelController:
                 workbook = self.excel_app.Workbooks.Open(
                     abs_path,
                     ReadOnly=read_only,
-                    UpdateLinks=constants.xlUpdateLinksAlways
+                    UpdateLinks=3  # xlUpdateLinksAlways
                 )
                 
                 # Сохраняем в кэш и словарь
@@ -255,16 +255,16 @@ class ExcelController:
                     
                     # Определяем формат файла
                     format_constants = {
-                        'xlsx': constants.xlOpenXMLWorkbook,
-                        'xls': constants.xlWorkbookNormal,
-                        'xlsm': constants.xlOpenXMLWorkbookMacroEnabled,
-                        'xlsb': constants.xlExcel12,
-                        'csv': constants.xlCSV
+                        'xlsx': 51,  # xlOpenXMLWorkbook
+                        'xls': 56,   # xlWorkbookNormal
+                        'xlsm': 52,  # xlOpenXMLWorkbookMacroEnabled
+                        'xlsb': 50,  # xlExcel12
+                        'csv': 6     # xlCSV
                     }
                     
                     file_format_const = format_constants.get(
                         file_format.lower() if file_format else 'xlsx',
-                        constants.xlOpenXMLWorkbook
+                        51  # xlOpenXMLWorkbook
                     )
                     
                     workbook.SaveAs(save_as_path, FileFormat=file_format_const)
@@ -399,7 +399,7 @@ class ExcelController:
                     worksheets.append({
                         'name': worksheet.Name,
                         'index': i,
-                        'visible': worksheet.Visible == constants.xlSheetVisible
+                        'visible': worksheet.Visible == -1  # xlSheetVisible
                     })
                 
                 logger.info(f"Получен список листов для {file_path}: {len(worksheets)} листов")

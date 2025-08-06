@@ -1,5 +1,5 @@
 """
-Основной MCP сервер для Excel
+Универсальный MCP сервер для Excel
 """
 
 import asyncio
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 
 class ExcelMCPServer:
     """
-    Основной MCP сервер для управления Microsoft Excel
+    Универсальный MCP сервер для управления Microsoft Excel
     """
     
     def __init__(self):

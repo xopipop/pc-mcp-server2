@@ -1,5 +1,5 @@
 """
-Примеры использования Excel MCP Server
+Примеры использования универсального Excel MCP Server
 """
 
 import asyncio
@@ -162,14 +162,58 @@ End Function
     await server.excel_controller.cleanup()
 
 
+async def example_data_analysis():
+    """Пример анализа данных"""
+    print("\n=== Пример анализа данных ===")
+    
+    server = ExcelMCPServer()
+    
+    # Пример 1: Создание сводной таблицы
+    print("\n1. Создание сводной таблицы...")
+    result = await server.advanced_operations.create_pivot_table({
+        "file_path": "new_workbook_123.xlsx",
+        "sheet": "Sheet1",
+        "source_data": "A2:D5",
+        "destination": "F1",
+        "fields": {
+            "rows": ["Город"],
+            "values": ["Возраст"],
+            "aggregation": "average"
+        }
+    })
+    print(f"Результат: {json.dumps(result, ensure_ascii=False, indent=2)}")
+    
+    # Пример 2: Условное форматирование
+    print("\n2. Применение условного форматирования...")
+    result = await server.formatting.apply_conditional_formatting({
+        "file_path": "new_workbook_123.xlsx",
+        "sheet": "Sheet1",
+        "range_address": "B2:B5",
+        "rules": [
+            {
+                "type": "cell_value",
+                "operator": "greater_than",
+                "value": 30,
+                "format": {"font_color": "red", "bold": True}
+            }
+        ]
+    })
+    print(f"Результат: {json.dumps(result, ensure_ascii=False, indent=2)}")
+    
+    # Очистка
+    await server.excel_controller.cleanup()
+
+
 async def main():
     """Главная функция с примерами"""
     try:
         await example_basic_operations()
         await example_advanced_operations()
         await example_vba_operations()
+        await example_data_analysis()
         
         print("\n=== Все примеры выполнены успешно! ===")
+        print("Этот универсальный MCP сервер может работать с любыми данными Excel.")
         
     except Exception as e:
         print(f"Ошибка при выполнении примеров: {e}")
