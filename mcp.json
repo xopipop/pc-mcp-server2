@@ -1,10 +1,11 @@
 {
   "mcpServers": {
-    "excel": {
-      "command": "python",
-      "args": ["-m", "src.server"],
+    "pc-control-mcp": {
+      "command": "C:\\Users\\User-01\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+      "args": ["C:\\Users\\User-01\\Desktop\\excel-mcp-server\\pc_control_mcp.py"],
       "env": {
-        "PYTHONPATH": "."
+        "PYTHONPATH": "C:\\Users\\User-01\\Desktop\\excel-mcp-server",
+        "PC_CONTROL_MCP_LOG_LEVEL": "INFO"
       }
     }
   }

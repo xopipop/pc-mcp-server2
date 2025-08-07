@@ -1,11 +1,16 @@
-{
-  "mcpServers": {
-    "excel": {
-      "command": "python",
-      "args": ["-m", "src.server"],
-      "env": {
-        "PYTHONPATH": "."
-      }
-    }
-  }
-} 
+# MCP Configuration for PC Control Server
+# This file configures the MCP server for Cursor
+
+mcpServers:
+  pc-control-mcp:
+    command: C:\Users\User-01\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+    args: [C:\Users\User-01\Desktop\excel-mcp-server\pc_control_mcp.py]
+    env:
+      PYTHONPATH: C:\Users\User-01\Desktop\excel-mcp-server
+      PC_CONTROL_MCP_LOG_LEVEL: INFO
+
+# Security warning
+# ⚠️ THIS SERVER PROVIDES FULL SYSTEM ACCESS! USE WITH EXTREME CAUTION!
+# ⚠️ Use only in isolated environments or virtual machines
+# ⚠️ Create full system backups before use
+# ⚠️ Never use on production systems 

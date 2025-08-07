@@ -7,9 +7,9 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 
 setup(
-    name="excel-mcp-server",
-    version="2.0.0",
-    description="Universal MCP Server for Microsoft Excel",
+    name="pc-control-mcp-server",
+    version="1.0.0",
+    description="Full-featured MCP Server for PC Control and System Management",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
@@ -17,7 +17,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "excel-mcp-server=src.server:main",
+            "pc-control-mcp-server=pc_control_mcp:main",
         ],
     },
 ) 
