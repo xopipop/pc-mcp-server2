@@ -632,7 +632,11 @@ class PCControlServer:
                 await self.server.run(
                     read_stream,
                     write_stream,
-                    InitializationOptions()
+                    InitializationOptions(
+                        server_name=self.config.server.name,
+                        server_version=self.config.server.version,
+                        capabilities=self.server.get_capabilities()
+                    )
                 )
                 print(f"DEBUG: Server finished")
         except Exception as e:
