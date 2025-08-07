@@ -1,0 +1,41 @@
+# PC Control MCP Server - Cursor IDE Rules
+
+## Project Context
+This is a PC Control MCP (Model Context Protocol) Server that provides system control capabilities through standardized interface.
+
+## Key Technologies
+- Python 3.8+
+- MCP (Model Context Protocol)
+- Asyncio for async operations
+- Pydantic for data validation
+- YAML for configuration
+
+## Code Style
+- Use type hints for all functions
+- Follow PEP 8 conventions
+- Use async/await for I/O operations
+- Document all public methods
+
+## Security Guidelines
+- Always validate inputs through SecurityManager
+- Log all security-sensitive operations
+- Use path validation for file operations
+- Implement proper error handling
+
+## MCP Integration
+- Tools are registered in main.py
+- Each tool has input schema validation
+- Responses use TextContent format
+- Errors are properly structured
+
+## Testing
+- Write unit tests for new features
+- Test security validation thoroughly
+- Mock external dependencies
+
+## File Structure
+- src/core/ - Core functionality
+- src/tools/ - Tool implementations
+- src/monitoring/ - Metrics and monitoring
+- config/ - Configuration files
+- tests/ - Test suite

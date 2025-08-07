@@ -1,0 +1,74 @@
+{
+  "mcpServers": {
+    "pc-control": {
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PC_CONTROL_CONFIG_PATH": "${workspaceFolder}/config",
+        "PC_CONTROL_LOG_LEVEL": "INFO"
+      },
+      "capabilities": {
+        "tools": true,
+        "prompts": false,
+        "resources": false
+      },
+      "transport": {
+        "type": "stdio"
+      }
+    },
+    "pc-control-venv": {
+      "command": "${workspaceFolder}/venv/bin/python",
+      "args": [
+        "${workspaceFolder}/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PC_CONTROL_CONFIG_PATH": "${workspaceFolder}/config",
+        "PC_CONTROL_LOG_LEVEL": "INFO"
+      },
+      "capabilities": {
+        "tools": true,
+        "prompts": false,
+        "resources": false
+      },
+      "transport": {
+        "type": "stdio"
+      },
+      "condition": {
+        "os": ["linux", "darwin"]
+      }
+    },
+    "pc-control-venv-windows": {
+      "command": "${workspaceFolder}\\venv\\Scripts\\python.exe",
+      "args": [
+        "${workspaceFolder}\\main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PC_CONTROL_CONFIG_PATH": "${workspaceFolder}\\config",
+        "PC_CONTROL_LOG_LEVEL": "INFO"
+      },
+      "capabilities": {
+        "tools": true,
+        "prompts": false,
+        "resources": false
+      },
+      "transport": {
+        "type": "stdio"
+      },
+      "condition": {
+        "os": ["windows"]
+      }
+    }
+  },
+  "settings": {
+    "defaultServer": "pc-control",
+    "autoStart": false,
+    "restartOnFailure": true,
+    "maxRestarts": 3,
+    "restartDelay": 1000
+  }
+}

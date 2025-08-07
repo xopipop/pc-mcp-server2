@@ -20,12 +20,9 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # PyInstaller
 *.manifest
@@ -38,22 +35,72 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
-.nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
-*.py,cover
 .hypothesis/
 .pytest_cache/
 
-# Virtual environments
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
 venv/
 ENV/
-env/
-.venv
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 # IDEs
 .idea/
@@ -61,35 +108,39 @@ env/
 *.swp
 *.swo
 *~
-.project
-.pydevproject
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
+# Project specific
 logs/
 *.log
+.pc_control_mcp/
 
-# PC Control MCP specific
-~/.pc_control_mcp/
-*.pid
-*.lock
+# Cursor IDE specific
+.cursor/logs/
+.cursor/cache/
+.cursor/settings.json
+.cursor/*.log
+.cursor/mcp-server.log
 
-# Config overrides (keep defaults)
-config/local.yaml
-config/production.yaml
+# MCP runtime files
+mcp-runtime/
+mcp-session.json
+.mcp-state/
 
 # Temporary files
-tmp/
-temp/
 *.tmp
+*.temp
 *.bak
+.backup/
 
-# Security sensitive files
-*.key
-*.pem
-*.crt
-.env
-.env.*
+# Local configuration overrides
+config/local.yaml
+config/*.local.yaml
+
+# Test artifacts
+test-results/
+test-reports/
+.test-cache/

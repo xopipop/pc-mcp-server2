@@ -1,0 +1,173 @@
+{
+  "version": "1.0",
+  "description": "PC Control MCP Server Configuration for Cursor IDE",
+  "servers": {
+    "pc-control-dev": {
+      "name": "PC Control (Development)",
+      "command": "${workspaceFolder}/venv/bin/python",
+      "args": [
+        "${workspaceFolder}/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PC_CONTROL_CONFIG_PATH": "${workspaceFolder}/config",
+        "PC_CONTROL_LOG_LEVEL": "DEBUG",
+        "PC_CONTROL_ENV": "development"
+      },
+      "capabilities": {
+        "tools": true,
+        "prompts": false,
+        "resources": false
+      },
+      "transport": {
+        "type": "stdio"
+      },
+      "autoStart": false,
+      "restartOnFailure": true,
+      "maxRestarts": 3
+    },
+    "pc-control-prod": {
+      "name": "PC Control (Production)",
+      "command": "${workspaceFolder}/venv/bin/python",
+      "args": [
+        "${workspaceFolder}/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PC_CONTROL_CONFIG_PATH": "${workspaceFolder}/config",
+        "PC_CONTROL_LOG_LEVEL": "INFO",
+        "PC_CONTROL_ENV": "production",
+        "PC_CONTROL_SECURITY_ENABLED": "true"
+      },
+      "capabilities": {
+        "tools": true,
+        "prompts": false,
+        "resources": false
+      },
+      "transport": {
+        "type": "stdio"
+      },
+      "autoStart": true,
+      "restartOnFailure": true,
+      "maxRestarts": 5
+    },
+    "pc-control-test": {
+      "name": "PC Control (Testing)",
+      "command": "${workspaceFolder}/venv/bin/python",
+      "args": [
+        "-m",
+        "pytest",
+        "--mcp-mode",
+        "${workspaceFolder}/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PC_CONTROL_CONFIG_PATH": "${workspaceFolder}/config",
+        "PC_CONTROL_LOG_LEVEL": "DEBUG",
+        "PC_CONTROL_ENV": "testing",
+        "PC_CONTROL_TEST_MODE": "true"
+      },
+      "capabilities": {
+        "tools": true,
+        "prompts": false,
+        "resources": false
+      },
+      "transport": {
+        "type": "stdio"
+      },
+      "autoStart": false
+    }
+  },
+  "profiles": {
+    "default": {
+      "server": "pc-control-prod",
+      "settings": {
+        "timeout": 30000,
+        "retryDelay": 1000,
+        "healthCheckInterval": 60000
+      }
+    },
+    "development": {
+      "server": "pc-control-dev",
+      "settings": {
+        "timeout": 60000,
+        "retryDelay": 500,
+        "healthCheckInterval": 30000
+      }
+    },
+    "testing": {
+      "server": "pc-control-test",
+      "settings": {
+        "timeout": 120000,
+        "retryDelay": 2000,
+        "healthCheckInterval": 0
+      }
+    }
+  },
+  "toolAliases": {
+    "sys": "get_system_info",
+    "ps": "list_processes",
+    "ls": "list_directory",
+    "cat": "read_file",
+    "exec": "execute_command"
+  },
+  "shortcuts": [
+    {
+      "name": "System Status",
+      "description": "Get full system status",
+      "tools": ["get_system_info", "list_processes", "get_disk_usage"]
+    },
+    {
+      "name": "Quick File Search",
+      "description": "Search files in current directory",
+      "tools": ["search_files"],
+      "defaultArgs": {
+        "directory": "${workspaceFolder}",
+        "recursive": true
+      }
+    }
+  ],
+  "security": {
+    "allowedPaths": [
+      "${workspaceFolder}",
+      "${home}/Documents",
+      "${home}/Downloads"
+    ],
+    "blockedPaths": [
+      "/etc",
+      "/System",
+      "C:\\Windows\\System32",
+      "C:\\Program Files"
+    ],
+    "allowedCommands": [
+      "ls", "dir", "pwd", "echo", "cat", "type",
+      "python", "node", "npm", "pip",
+      "git", "curl", "wget"
+    ],
+    "blockedCommands": [
+      "rm", "del", "format", "fdisk",
+      "shutdown", "reboot", "kill -9",
+      "sudo", "su", "chmod", "chown"
+    ]
+  },
+  "logging": {
+    "enabled": true,
+    "level": "INFO",
+    "format": "json",
+    "destination": "${workspaceFolder}/.cursor/logs/mcp-server.log",
+    "maxSize": "10MB",
+    "maxFiles": 5,
+    "includeTimestamp": true
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics": [
+      "cpu_usage",
+      "memory_usage",
+      "disk_usage",
+      "network_traffic"
+    ],
+    "interval": 60,
+    "history": 24
+  }
+}
