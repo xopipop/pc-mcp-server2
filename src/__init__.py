@@ -39,7 +39,23 @@ from .core import (
 from .tools import (
     SystemTools,
     ProcessTools,
-    FileTools
+    FileTools,
+    NetworkTools,
+    ServiceTools,
+    AutomationTools
+)
+
+# Conditional import for Windows-only tools
+try:
+    from .tools import RegistryTools
+    _registry_exports = ['RegistryTools']
+except ImportError:
+    _registry_exports = []
+
+from .monitoring import (
+    MetricsCollector,
+    AlertManager,
+    AlertRule
 )
 
 __all__ = [
@@ -79,5 +95,13 @@ __all__ = [
     # Tools
     'SystemTools',
     'ProcessTools',
-    'FileTools'
-]
+    'FileTools',
+    'NetworkTools',
+    'ServiceTools',
+    'AutomationTools',
+    
+    # Monitoring
+    'MetricsCollector',
+    'AlertManager',
+    'AlertRule'
+] + _registry_exports
