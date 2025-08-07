@@ -11,7 +11,9 @@ from typing import Any, Dict, List, Optional
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from mcp.server import Server, stdio_transport
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
+from mcp.server.models import InitializationOptions
 from mcp.types import Tool, TextContent, ImageContent
 from pydantic import BaseModel, Field
 
@@ -607,9 +609,12 @@ class PCControlServer:
     async def run(self):
         """Run the MCP server."""
         log.info("Starting PC Control MCP Server...")
-        async with stdio_transport(self.server):
-            log.info("Server running. Press Ctrl+C to stop.")
-            await asyncio.Event().wait()
+        async with stdio_server() as (read_stream, write_stream):
+            await self.server.run(
+                read_stream,
+                write_stream,
+                InitializationOptions()
+            )
 
 
 async def main():

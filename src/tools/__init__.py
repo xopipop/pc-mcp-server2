@@ -15,8 +15,12 @@ try:
 except Exception:
     __all_registry__ = []
 
-# Import automation tools
-from .automation_tools import AutomationTools
+# Import automation tools conditionally
+try:
+    from .automation_tools import AutomationTools
+    __all_automation__ = ['AutomationTools']
+except ImportError:
+    __all_automation__ = []
 
 __all__ = [
     'SystemTools',
@@ -27,6 +31,5 @@ __all__ = [
     'NetworkTools',
     'NetworkInfo',
     'ServiceTools',
-    'ServiceInfo',
-    'AutomationTools'
-] + __all_registry__
+    'ServiceInfo'
+] + __all_registry__ + __all_automation__

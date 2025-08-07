@@ -8,9 +8,15 @@ import io
 import time
 from typing import Dict, Any, List, Optional, Tuple, Union
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
-import pyautogui
+try:
+    import pyautogui
+    PYAUTOGUI_AVAILABLE = True
+except ImportError:
+    PYAUTOGUI_AVAILABLE = False
+    pyautogui = None
+    
 from PIL import Image, ImageDraw, ImageGrab
 import numpy as np
 
@@ -26,29 +32,51 @@ from ..core import (
 log = StructuredLogger(__name__)
 
 # Configure pyautogui safety features
-pyautogui.FAILSAFE = True
-pyautogui.PAUSE = 0.1
+if PYAUTOGUI_AVAILABLE:
+    pyautogui.FAILSAFE = True
+    pyautogui.PAUSE = 0.1
+
+
+def require_pyautogui(func):
+    """Decorator to check if pyautogui is available."""
+    async def wrapper(*args, **kwargs):
+        if not PYAUTOGUI_AVAILABLE:
+            raise AutomationException("PyAutoGUI is not available. Please install tkinter and pyautogui.")
+        return await func(*args, **kwargs)
+    return wrapper
 
 
 class AutomationTools:
     """GUI automation tools using pyautogui."""
     
     def __init__(self, security_manager: Optional[SecurityManager] = None):
+        if not PYAUTOGUI_AVAILABLE:
+            log.warning("PyAutoGUI is not available. GUI automation features will be disabled.")
+            
         self.security = security_manager
         self.config = get_config()
         
         # Configure from config
         config_settings = self.config.get('gui_automation', {})
-        pyautogui.PAUSE = config_settings.get('default_pause', 0.1)
-        pyautogui.FAILSAFE = config_settings.get('fail_safe', True)
+        if PYAUTOGUI_AVAILABLE:
+            pyautogui.PAUSE = config_settings.get('default_pause', 0.1)
+            pyautogui.FAILSAFE = config_settings.get('fail_safe', True)
         
         # Screen size cache
         self._screen_size = None
         self._screen_size_time = None
         self._screen_cache_ttl = 60  # 60 seconds
+        
+    def _check_availability(self):
+        """Check if PyAutoGUI is available."""
+        if not PYAUTOGUI_AVAILABLE:
+            raise AutomationException("PyAutoGUI is not available. Please install tkinter and pyautogui.")
     
     def _get_screen_size(self) -> Tuple[int, int]:
         """Get cached screen size."""
+        if not PYAUTOGUI_AVAILABLE:
+            return (1920, 1080)  # Default fallback size
+            
         now = time.time()
         if (self._screen_size is None or 
             self._screen_size_time is None or 
@@ -74,7 +102,10 @@ class AutomationTools:
             width, height = self._get_screen_size()
             
             # Get mouse position
-            mouse_x, mouse_y = pyautogui.position()
+            if PYAUTOGUI_AVAILABLE:
+                mouse_x, mouse_y = pyautogui.position()
+            else:
+                mouse_x, mouse_y = 0, 0
             
             # Get monitor info if available
             monitors = []
@@ -104,7 +135,7 @@ class AutomationTools:
                 'primary_size': {'width': width, 'height': height},
                 'monitors': monitors,
                 'mouse_position': {'x': mouse_x, 'y': mouse_y},
-                'pyautogui_version': pyautogui.__version__
+                'pyautogui_version': pyautogui.__version__ if PYAUTOGUI_AVAILABLE else 'Not available'
             }
             
         except Exception as e:
@@ -124,6 +155,8 @@ class AutomationTools:
         Returns:
             Dictionary with operation result
         """
+        self._check_availability()
+        
         try:
             if relative:
                 # Get current position for relative movement
@@ -414,7 +447,7 @@ class AutomationTools:
                 'action': 'take_screenshot',
                 'size': {'width': screenshot.width, 'height': screenshot.height},
                 'mode': screenshot.mode,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             
             if save_path:

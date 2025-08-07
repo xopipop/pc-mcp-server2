@@ -9,7 +9,7 @@ import platform
 import subprocess
 import json
 from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import psutil
 import aiohttp
 
@@ -191,7 +191,7 @@ class NetworkTools:
                 },
                 'per_interface': per_interface,
                 'connections': conn_stats,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -688,7 +688,7 @@ class NetworkTools:
             results = {
                 'host': host,
                 'ip_address': ip_address,
-                'scan_start': datetime.utcnow().isoformat(),
+                'scan_start': datetime.now(timezone.utc).isoformat(),
                 'ports': {},
                 'open_ports': [],
                 'closed_ports': [],
@@ -720,7 +720,7 @@ class NetworkTools:
                     else:
                         results['filtered_ports'].append(port)
             
-            results['scan_end'] = datetime.utcnow().isoformat()
+            results['scan_end'] = datetime.now(timezone.utc).isoformat()
             
             return results
             
@@ -806,7 +806,7 @@ class NetworkTools:
             routes_info = {
                 'raw_output': output,
                 'routes': self._parse_routing_table(output),
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             
             return routes_info

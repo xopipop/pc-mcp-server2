@@ -8,7 +8,7 @@ import secrets
 import time
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 import jwt
 import bcrypt
@@ -34,7 +34,7 @@ class User:
         self.user_id = user_id
         self.roles = roles or []
         self.metadata = metadata or {}
-        self.authenticated_at = datetime.utcnow()
+        self.authenticated_at = datetime.now(timezone.utc)
 
 
 class AuthResult:
@@ -56,7 +56,7 @@ class Operation:
         self.action = action
         self.resource = resource
         self.details = details or {}
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
 
 
 class SessionManager:
@@ -293,8 +293,8 @@ class SecurityManager:
         payload = {
             "user_id": user.user_id,
             "roles": user.roles,
-            "exp": datetime.utcnow() + timedelta(seconds=self.config.authentication.token_expiry),
-            "iat": datetime.utcnow()
+            "exp": datetime.now(timezone.utc) + timedelta(seconds=self.config.authentication.token_expiry),
+            "iat": datetime.now(timezone.utc)
         }
         
         return jwt.encode(payload, self._jwt_secret, algorithm="HS256")

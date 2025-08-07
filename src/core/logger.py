@@ -6,7 +6,7 @@ import sys
 import json
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
-from datetime import datetime
+from datetime import datetime, timezone
 import traceback
 
 from loguru import logger
@@ -101,7 +101,7 @@ class AuditLogger:
                      user_agent: Optional[str] = None):
         """Log an auditable operation."""
         audit_entry = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'user_id': user_id or 'anonymous',
             'action': action,
             'resource': resource,

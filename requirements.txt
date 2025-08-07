@@ -19,6 +19,7 @@ wmi>=1.5.1; sys_platform == 'win32'
 # Security
 cryptography>=42.0.0
 bcrypt>=4.0.0
+pyjwt>=2.8.0
 
 # Monitoring and metrics
 prometheus-client>=0.17.0

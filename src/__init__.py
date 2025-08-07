@@ -41,9 +41,16 @@ from .tools import (
     ProcessTools,
     FileTools,
     NetworkTools,
-    ServiceTools,
-    AutomationTools
+    ServiceTools
 )
+
+# Import AutomationTools conditionally
+try:
+    from .tools import AutomationTools
+    _automation_exports = ['AutomationTools']
+except ImportError as e:
+    # AutomationTools requires pyautogui which needs tkinter
+    _automation_exports = []
 
 # Conditional import for Windows-only tools
 try:
@@ -98,10 +105,9 @@ __all__ = [
     'FileTools',
     'NetworkTools',
     'ServiceTools',
-    'AutomationTools',
     
     # Monitoring
     'MetricsCollector',
     'AlertManager',
     'AlertRule'
-] + _registry_exports
+] + _registry_exports + _automation_exports

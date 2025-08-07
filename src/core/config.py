@@ -5,7 +5,7 @@ Configuration management for PC Control MCP Server.
 import os
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Union
-from pydantic import BaseModel, Field, validator, ValidationError
+from pydantic import BaseModel, Field, field_validator, ValidationError
 import yaml
 from dotenv import load_dotenv
 
@@ -60,7 +60,8 @@ class GuiAutomationConfig(BaseModel):
     screenshot_directory: str = Field(default="~/.pc_control_mcp/screenshots")
     image_recognition: ImageRecognitionConfig = Field(default_factory=ImageRecognitionConfig)
     
-    @validator('screenshot_directory')
+    @field_validator('screenshot_directory')
+    @classmethod
     def expand_screenshot_directory(cls, v):
         return str(Path(v).expanduser())
 
