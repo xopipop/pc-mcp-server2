@@ -633,8 +633,8 @@ class PCControlServer:
                     read_stream,
                     write_stream,
                     InitializationOptions(
-                        server_name=self.config.server.name,
-                        server_version=self.config.server.version,
+                        server_name=self.config.config.server.name,
+                        server_version=self.config.config.server.version,
                         capabilities=self.server.get_capabilities()
                     )
                 )
