@@ -1,0 +1,70 @@
+server:
+  name: "pc-control-mcp"
+  version: "2.0.0"
+  log_level: "INFO"
+  max_connections: 10
+
+security:
+  enabled: true
+  authentication:
+    type: "none"  # none, basic, token
+    token_expiry: 3600
+  authorization:
+    allowed_commands: []
+    blocked_paths: []
+    max_file_size: 104857600  # 100MB
+    command_timeout: 30
+  audit:
+    enabled: true
+    log_all_operations: true
+    retention_days: 30
+
+gui_automation:
+  enabled: true
+  safe_mode: true
+  failsafe: true
+  min_delay: 0.1
+  max_screen_resolution: [1920, 1080]
+  screenshot_directory: "~/.pc_control_mcp/screenshots"
+  image_recognition:
+    enabled: true
+    confidence_threshold: 0.8
+
+monitoring:
+  enabled: true
+  interval: 5
+  metrics:
+    cpu_threshold: 80
+    memory_threshold: 90
+    disk_threshold: 85
+  alerts:
+    enabled: true
+    email: false
+    webhook: false
+    log: true
+
+process_management:
+  max_processes: 100
+  allowed_processes: []
+  blocked_processes: []
+  resource_limits:
+    cpu_percent: 100
+    memory_mb: 1024
+
+network:
+  allowed_ports: []
+  blocked_ports: []
+  interface_monitoring: true
+  traffic_analysis: false
+
+file_operations:
+  allowed_paths: []
+  blocked_paths: 
+    - "/etc"
+    - "/sys"
+    - "/proc"
+    - "C:\\Windows\\System32"
+    - "C:\\Program Files"
+  max_file_size: 104857600  # 100MB
+  allowed_extensions: []
+  blocked_extensions: [".exe", ".dll", ".sys", ".bat", ".cmd"]

@@ -1,4 +1,4 @@
-# MCP SDK and core dependencies
+# Core dependencies
 mcp>=1.0.0
 pydantic>=2.0.0
 asyncio-mqtt>=0.16.0
@@ -7,17 +7,43 @@ loguru>=0.7.0
 aiofiles>=23.0.0
 typing-extensions>=4.8.0
 
-# PC Control MCP Server - System monitoring and control
-psutil>=5.9.8  # Required for system monitoring, process management
-pyautogui>=0.9.54  # Optional - for GUI automation features
+# System monitoring and control
+psutil>=5.9.8
+pyautogui>=0.9.54
+pillow>=10.0.0
 
-# Platform-specific dependencies
-pywin32>=306; sys_platform == 'win32'  # Windows-specific operations
+# Windows-specific dependencies
+pywin32>=306; sys_platform == 'win32'
+wmi>=1.5.1; sys_platform == 'win32'
 
-# Additional optional dependencies for extended features
-# Uncomment as needed:
-# cryptography>=42.0.0  # For secure operations
-# watchdog>=3.0.0  # For file system monitoring
-# pillow>=10.0.0  # Already included with pyautogui, for screenshots
-# keyboard>=0.13.5  # For advanced keyboard control
-# mouse>=0.7.1  # For advanced mouse control
+# Security
+cryptography>=42.0.0
+bcrypt>=4.0.0
+
+# Monitoring and metrics
+prometheus-client>=0.17.0
+watchdog>=3.0.0
+
+# Configuration
+pyyaml>=6.0.0
+jsonschema>=4.19.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.0.0
+
+# Code quality
+flake8>=6.0.0
+black>=23.0.0
+mypy>=1.5.0
+isort>=5.12.0
+
+# Additional utilities
+aiohttp>=3.8.0
+click>=8.1.0
