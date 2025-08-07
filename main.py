@@ -11,7 +11,8 @@ from typing import Any, Dict, List, Optional
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from mcp.server import Server, stdio_transport
+from mcp.server import Server
+from mcp.server.stdio import stdio_transport
 from mcp.types import Tool, TextContent, ImageContent
 from pydantic import BaseModel, Field
 

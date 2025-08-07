@@ -40,6 +40,23 @@ A secure and powerful PC Control MCP (Model Context Protocol) Server that provid
 
 ## 🛠️ Installation
 
+### ⚠️ Known Issue: ImportError with MCP
+
+If you encounter:
+```
+ImportError: cannot import name 'stdio_transport' from 'mcp.server'
+```
+
+This has been fixed in the code. The import in `main.py` has been updated from:
+```python
+from mcp.server import Server, stdio_transport
+```
+to:
+```python
+from mcp.server import Server
+from mcp.server.stdio import stdio_transport
+```
+
 ### Using pip
 ```bash
 pip install -r requirements.txt
