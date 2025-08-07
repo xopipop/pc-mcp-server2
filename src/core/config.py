@@ -154,9 +154,13 @@ class ConfigManager:
             config_path: Path to configuration file. If not provided,
                         will look for config/default.yaml
         """
+        print(f"DEBUG: ConfigManager.__init__(config_path={config_path})")
         self.config_path = self._resolve_config_path(config_path)
+        print(f"DEBUG: Resolved config_path: {self.config_path}")
         self.config = self._load_config()
+        print(f"DEBUG: Loaded config: {self.config}")
         self._apply_env_overrides()
+        print("DEBUG: Applied env overrides")
         
     def _resolve_config_path(self, config_path: Optional[Union[str, Path]]) -> Path:
         """Resolve configuration file path."""
@@ -307,7 +311,9 @@ def get_config() -> ConfigManager:
     """Get global configuration manager instance."""
     global _config_manager
     if _config_manager is None:
+        print("DEBUG: Creating new ConfigManager instance")
         _config_manager = ConfigManager()
+        print(f"DEBUG: ConfigManager created with config: {_config_manager.config}")
     return _config_manager
 
 

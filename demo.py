@@ -48,20 +48,65 @@ async def demo():
     print("🚀 PC Control MCP Server - Демонстрация возможностей")
     print("="*60)
     
+    print("\nDEBUG: Инициализация инструментов...")
+    
     # Инициализация инструментов
-    system_tools = SystemTools()
-    process_tools = ProcessTools()
-    file_tools = FileTools()
-    network_tools = NetworkTools()
-    metrics = MetricsCollector()
+    try:
+        system_tools = SystemTools()
+        print("DEBUG: SystemTools создан")
+    except Exception as e:
+        print(f"DEBUG: Ошибка создания SystemTools: {e}")
+        import traceback
+        traceback.print_exc()
+        return
+        
+    try:
+        process_tools = ProcessTools()
+        print("DEBUG: ProcessTools создан")
+    except Exception as e:
+        print(f"DEBUG: Ошибка создания ProcessTools: {e}")
+        import traceback
+        traceback.print_exc()
+        return
+        
+    try:
+        file_tools = FileTools()
+        print("DEBUG: FileTools создан")
+    except Exception as e:
+        print(f"DEBUG: Ошибка создания FileTools: {e}")
+        import traceback
+        traceback.print_exc()
+        return
+        
+    try:
+        network_tools = NetworkTools()
+        print("DEBUG: NetworkTools создан")
+    except Exception as e:
+        print(f"DEBUG: Ошибка создания NetworkTools: {e}")
+        import traceback
+        traceback.print_exc()
+        return
+        
+    try:
+        metrics = MetricsCollector()
+        print("DEBUG: MetricsCollector создан")
+    except Exception as e:
+        print(f"DEBUG: Ошибка создания MetricsCollector: {e}")
+        import traceback
+        traceback.print_exc()
+        return
+    
+    print("DEBUG: Все инструменты инициализированы\n")
     
     # 1. Системная информация
     print("\n📊 СИСТЕМНАЯ ИНФОРМАЦИЯ:")
     print("-" * 40)
     
     try:
+        print("DEBUG: Вызов system_tools.get_system_info('basic')...")
         info = await system_tools.get_system_info("basic")
-        print(f"🖥️  ОС: {info['platform']} {info['version']}")
+        print(f"DEBUG: Получен результат: {info}")
+        print(f"🖥️  ОС: {info['platform']} {info.get('platform_version', info.get('version', 'Unknown'))}")
         print(f"🏷️  Имя хоста: {info['hostname']}")
         print(f"🏗️  Архитектура: {info['architecture']}")
         print(f"🐍 Python: {info['python_version']}")

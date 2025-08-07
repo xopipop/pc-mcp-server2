@@ -119,17 +119,30 @@ class PCControlServer:
     """PC Control MCP Server implementation."""
     
     def __init__(self):
+        print("DEBUG: PCControlServer.__init__() called")
         self.server = Server("pc-control-mcp")
+        print("DEBUG: Server instance created")
+        
         self.config = get_config()
+        print(f"DEBUG: Config loaded: {self.config}")
+        
         self.security = SecurityManager()
+        print("DEBUG: SecurityManager created")
         
         # Initialize tools
         self.system_tools = SystemTools(self.security)
+        print("DEBUG: SystemTools created")
+        
         self.process_tools = ProcessTools(self.security)
+        print("DEBUG: ProcessTools created")
+        
         self.file_tools = FileTools(self.security)
+        print("DEBUG: FileTools created")
         
         # Register handlers
+        print("DEBUG: Registering tools...")
         self._register_tools()
+        print("DEBUG: Tools registered")
         
         log.info(f"PC Control MCP Server v{__version__} initialized")
     
@@ -609,23 +622,41 @@ class PCControlServer:
     async def run(self):
         """Run the MCP server."""
         log.info("Starting PC Control MCP Server...")
-        async with stdio_server() as (read_stream, write_stream):
-            await self.server.run(
-                read_stream,
-                write_stream,
-                InitializationOptions()
-            )
+        try:
+            print(f"DEBUG: Creating stdio server...")
+            async with stdio_server() as (read_stream, write_stream):
+                print(f"DEBUG: Stdio server created, streams: read={read_stream}, write={write_stream}")
+                log.info("Stdio server initialized")
+                
+                print(f"DEBUG: Running server...")
+                await self.server.run(
+                    read_stream,
+                    write_stream,
+                    InitializationOptions()
+                )
+                print(f"DEBUG: Server finished")
+        except Exception as e:
+            print(f"DEBUG: Error in server.run: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
 
 
 async def main():
     """Main entry point."""
     try:
+        print("DEBUG: Creating PCControlServer instance...")
         server = PCControlServer()
+        print("DEBUG: Server instance created, starting run...")
         await server.run()
     except KeyboardInterrupt:
+        print("DEBUG: KeyboardInterrupt received")
         log.info("Server stopped by user")
     except Exception as e:
+        print(f"DEBUG: Exception in main: {type(e).__name__}: {e}")
         log.error(f"Server error: {e}", exception=e)
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 

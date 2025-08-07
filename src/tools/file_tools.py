@@ -230,10 +230,10 @@ class FileTools:
             raise FileOperationException(f"Failed to read file: {str(e)}")
     
     async def write_file(self, path: str, content: str, 
-                        encoding: str = 'utf-8',
+                        encoding: str = 'utf-8', 
                         create_dirs: bool = False,
                         append: bool = False) -> Dict[str, Any]:
-        """Write content to file.
+        """Write content to a file.
         
         Args:
             path: File path
@@ -245,6 +245,9 @@ class FileTools:
         Returns:
             Dictionary with operation result
         """
+        log.debug(f"Writing file: {path}", append=append, create_dirs=create_dirs)
+        print(f"DEBUG: write_file called - path: {path}, content_length: {len(content)}, append: {append}")
+        
         try:
             # Normalize and validate path
             normalized_path = normalize_path(path)

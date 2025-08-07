@@ -90,18 +90,41 @@ class SystemTools:
     
     async def _get_basic_info(self) -> Dict[str, Any]:
         """Get basic system information."""
-        basic_info = get_basic_system_info()
+        log.debug("Getting basic system info...")
+        print("DEBUG: _get_basic_info() called")
         
-        # Add additional info
-        basic_info.update({
-            'boot_time': datetime.fromtimestamp(psutil.boot_time()).isoformat(),
-            'users': [user._asdict() for user in psutil.users()],
-            'python_implementation': platform.python_implementation(),
-            'system_encoding': sys.getdefaultencoding(),
-            'file_system_encoding': sys.getfilesystemencoding()
-        })
-        
-        return basic_info
+        try:
+            basic_info = get_basic_system_info()
+            print(f"DEBUG: get_basic_system_info returned: {basic_info}")
+            
+            # Add additional info
+            boot_time = psutil.boot_time()
+            print(f"DEBUG: boot_time: {boot_time}")
+            
+            users = psutil.users()
+            print(f"DEBUG: users: {users}")
+            
+            additional_info = {
+                'boot_time': datetime.fromtimestamp(boot_time).isoformat(),
+                'users': [user._asdict() for user in users],
+                'python_implementation': platform.python_implementation(),
+                'system_encoding': sys.getdefaultencoding(),
+                'file_system_encoding': sys.getfilesystemencoding()
+            }
+            print(f"DEBUG: additional_info: {additional_info}")
+            
+            basic_info.update(additional_info)
+            
+            print(f"DEBUG: final basic_info: {basic_info}")
+            log.debug(f"Basic system info: {basic_info}")
+            
+            return basic_info
+            
+        except Exception as e:
+            print(f"DEBUG: Error in _get_basic_info: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
     
     async def _get_cpu_info(self) -> Dict[str, Any]:
         """Get CPU information."""

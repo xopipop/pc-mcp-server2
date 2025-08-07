@@ -126,24 +126,34 @@ class ProcessTools:
         """List running processes with optional filters.
         
         Args:
-            filters: Optional filters:
-                    - name: Process name filter (substring match)
-                    - user: Username filter
-                    - status: Process status filter
-                    - min_cpu: Minimum CPU usage percentage
-                    - min_memory: Minimum memory usage percentage
-                    - sort_by: Sort field (cpu, memory, name, pid)
-                    - limit: Maximum number of results
+            filters: Optional filters dictionary with keys:
+                    - name: Process name filter (str)
+                    - user: Username filter (str)
+                    - status: Process status filter (str)
+                    - min_cpu: Minimum CPU usage (float)
+                    - min_memory: Minimum memory usage (float)
+                    - sort_by: Sort field (str) - cpu, memory, name, pid
+                    - limit: Maximum number of results (int)
         
         Returns:
             List of process information dictionaries
         """
+        log.debug("Listing processes", filters=filters)
+        print(f"DEBUG: list_processes called with filters: {filters}")
+        
         try:
-            processes = []
-            filters = filters or {}
+            # Security check
+            if self.security:
+                operation = Operation('read', 'process_list', {'filters': filters})
+                # Check authorization would be done at the server level
             
             # Get all processes
-            for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent', 'status']):
+            processes = []
+            
+            print("DEBUG: Iterating through psutil.process_iter()...")
+            for proc in psutil.process_iter(['pid', 'name', 'username', 'status', 
+                                            'cpu_percent', 'memory_percent', 
+                                            'create_time', 'ppid']):
                 try:
                     pinfo = proc.info
                     
