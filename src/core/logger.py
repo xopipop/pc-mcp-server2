@@ -183,5 +183,39 @@ def setup_logging(config_path: Optional[Union[str, Path]] = None):
     LoggerConfig(config_path)
 
 
+def enable_test_logging(project_root: Optional[Union[str, Path]] = None,
+                        level: str = 'DEBUG') -> Path:
+    """Enable additional, extremely verbose logging for test runs.
+
+    Adds an extra sink into the project `logs/` directory with a unique filename
+    so it is easy to attach to bug reports. Returns the path to the log file.
+    """
+    root = Path(project_root) if project_root else Path.cwd()
+    logs_dir = root / 'logs'
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    # Precise timestamp in file name to avoid collisions
+    log_path = logs_dir / f'test_{datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")}.log'
+
+    # Very verbose format for diagnostics
+    verbose_format = (
+        '{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | '
+        '{process.name}:{process.id} | {thread.name}:{thread.id} | '
+        '{name}:{function}:{line} - {message}'
+    )
+
+    # Add extra sink
+    logger.add(
+        log_path,
+        level=level,
+        format=verbose_format,
+        backtrace=True,
+        diagnose=True,
+        enqueue=True
+    )
+    # Lower global level to DEBUG for tests
+    logger.level(level)
+    return log_path
+
+
 # Create module logger
 log = StructuredLogger(__name__)

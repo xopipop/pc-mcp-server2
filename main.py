@@ -91,6 +91,14 @@ except Exception:
 
 # Setup logging
 setup_logging()
+TEST_LOG = None
+if '--test-log' in sys.argv:
+    try:
+        from src.core.logger import enable_test_logging
+        TEST_LOG = enable_test_logging(Path(__file__).parent)
+        print(f"DEBUG: Test logging enabled -> {TEST_LOG}")
+    except Exception as _e:
+        print(f"DEBUG: Failed to enable test logging: {_e}")
 log = StructuredLogger(__name__)
 
 # Tool parameter models
