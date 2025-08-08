@@ -85,11 +85,13 @@ class ServerProcess:
 class LauncherApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('PC Control MCP - Launcher')
-        self.geometry('900x600')
-        self.minsize(700, 400)
+        self.title('PC Control MCP — Launcher')
+        self.geometry('1000x650')
+        self.minsize(800, 480)
         self.project_root = self._detect_project_root()
         self.server = ServerProcess(self.project_root)
+        self.status = tk.StringVar(value='Idle')
+        self._apply_theme()
         self._build_ui()
         self.after(200, self._poll_output)
 
@@ -115,39 +117,69 @@ class LauncherApp(tk.Tk):
             return Path.cwd()
 
     def _build_ui(self) -> None:
-        frm = ttk.Frame(self)
-        frm.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
+        root = ttk.Frame(self, style='Surface.TFrame')
+        root.pack(fill=tk.BOTH, expand=True)
 
-        btns = ttk.Frame(frm)
-        btns.pack(fill=tk.X, pady=(0, 8))
-        ttk.Button(btns, text='Start Server', command=self.start_server).pack(side=tk.LEFT)
-        ttk.Button(btns, text='Stop Server', command=self.stop_server).pack(side=tk.LEFT, padx=(8, 0))
-        ttk.Button(btns, text='Save Log…', command=self.save_log).pack(side=tk.LEFT, padx=(8, 0))
-        ttk.Button(btns, text='Open Logs Folder', command=self.open_logs).pack(side=tk.LEFT, padx=(8, 0))
-        ttk.Button(btns, text='Clear', command=self.clear_output).pack(side=tk.LEFT, padx=(8, 0))
+        header = ttk.Frame(root, style='Header.TFrame')
+        header.pack(fill=tk.X)
+        ttk.Label(header, text='PC Control MCP', style='Title.TLabel').pack(side=tk.LEFT, padx=(16, 8), pady=12)
+        ttk.Label(header, text='GUI Launcher', style='Subtitle.TLabel').pack(side=tk.LEFT, pady=12)
 
-        self.output = tk.Text(frm, wrap=tk.NONE, state=tk.NORMAL)
-        self.output.pack(fill=tk.BOTH, expand=True)
+        toolbar = ttk.Frame(root, style='Toolbar.TFrame')
+        toolbar.pack(fill=tk.X)
+        ttk.Button(toolbar, text='Start', style='Accent.TButton', command=self.start_server).pack(side=tk.LEFT, padx=(16, 8), pady=10)
+        ttk.Button(toolbar, text='Stop', style='Danger.TButton', command=self.stop_server).pack(side=tk.LEFT, padx=(0, 16), pady=10)
+        ttk.Button(toolbar, text='Save Log…', command=self.save_log).pack(side=tk.LEFT, padx=(0, 8))
+        ttk.Button(toolbar, text='Open Logs', command=self.open_logs).pack(side=tk.LEFT, padx=(0, 8))
+        ttk.Button(toolbar, text='Clear', command=self.clear_output).pack(side=tk.LEFT)
 
-        xscroll = ttk.Scrollbar(self.output, orient=tk.HORIZONTAL, command=self.output.xview)
-        yscroll = ttk.Scrollbar(self.output, orient=tk.VERTICAL, command=self.output.yview)
+        body = ttk.Frame(root, style='Surface.TFrame')
+        body.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 12))
+
+        self.output = tk.Text(body, wrap=tk.NONE, state=tk.NORMAL, relief=tk.FLAT, borderwidth=0)
+        self.output.configure(bg=self.colors['surface'], fg=self.colors['text'], insertbackground=self.colors['accent'])
+        self.output.tag_configure('INFO', foreground=self.colors['info'])
+        self.output.tag_configure('WARN', foreground=self.colors['warn'])
+        self.output.tag_configure('ERROR', foreground=self.colors['error'])
+        self.output.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
+
+        xscroll = ttk.Scrollbar(self.output, orient=tk.HORIZONTAL, command=self.output.xview, style='Thin.Horizontal.TScrollbar')
+        yscroll = ttk.Scrollbar(self.output, orient=tk.VERTICAL, command=self.output.yview, style='Thin.Vertical.TScrollbar')
         self.output.configure(xscrollcommand=xscroll.set, yscrollcommand=yscroll.set)
         yscroll.pack(side=tk.RIGHT, fill=tk.Y)
         xscroll.pack(side=tk.BOTTOM, fill=tk.X)
 
+        statusbar = ttk.Frame(root, style='Status.TFrame')
+        statusbar.pack(fill=tk.X)
+        ttk.Label(statusbar, textvariable=self.status, style='Status.TLabel').pack(side=tk.LEFT, padx=12, pady=6)
+
     def start_server(self) -> None:
-        self.append('Starting server…')
+        self.append('Starting server…', tag='INFO')
         self.server.start()
+        self.status.set('Running')
 
     def stop_server(self) -> None:
-        self.append('Stopping server…')
+        self.append('Stopping server…', tag='WARN')
         self.server.stop()
+        self.status.set('Stopped')
 
     def clear_output(self) -> None:
         self.output.delete('1.0', tk.END)
 
-    def append(self, line: str) -> None:
-        self.output.insert(tk.END, line + '\n')
+    def append(self, line: str, tag: str | None = None) -> None:
+        use_tag = tag
+        upper = line.upper()
+        if not use_tag:
+            if 'ERROR' in upper or 'TRACEBACK' in upper:
+                use_tag = 'ERROR'
+            elif 'WARN' in upper or 'WARNING' in upper:
+                use_tag = 'WARN'
+            elif 'INFO' in upper or 'DEBUG' in upper:
+                use_tag = 'INFO'
+        if use_tag:
+            self.output.insert(tk.END, line + '\n', use_tag)
+        else:
+            self.output.insert(tk.END, line + '\n')
         self.output.see(tk.END)
 
     def save_log(self) -> None:
@@ -167,10 +199,48 @@ class LauncherApp(tk.Tk):
     def _poll_output(self) -> None:
         for line in self.server.read_lines():
             if line == '[process-exited]':
-                self.append('Server exited')
+                self.append('Server exited', tag='WARN')
+                self.status.set('Exited')
             else:
                 self.append(line)
         self.after(200, self._poll_output)
+
+    def _apply_theme(self) -> None:
+        self.colors = {
+            'bg': '#0f1115',
+            'surface': '#151922',
+            'toolbar': '#10131a',
+            'border': '#232838',
+            'text': '#e5e7eb',
+            'muted': '#a1a7b5',
+            'accent': '#3b82f6',
+            'accent_fg': '#ffffff',
+            'danger': '#ef4444',
+            'warn': '#f59e0b',
+            'info': '#60a5fa',
+        }
+        self.configure(bg=self.colors['bg'])
+        style = ttk.Style()
+        try:
+            style.theme_use('clam')
+        except Exception:
+            pass
+        style.configure('Surface.TFrame', background=self.colors['surface'])
+        style.configure('Header.TFrame', background=self.colors['toolbar'])
+        style.configure('Toolbar.TFrame', background=self.colors['toolbar'])
+        style.configure('Status.TFrame', background=self.colors['toolbar'])
+        style.configure('Title.TLabel', background=self.colors['toolbar'], foreground=self.colors['text'], font=('Segoe UI', 18, 'bold'))
+        style.configure('Subtitle.TLabel', background=self.colors['toolbar'], foreground=self.colors['muted'], font=('Segoe UI', 12))
+        style.configure('Status.TLabel', background=self.colors['toolbar'], foreground=self.colors['muted'], font=('Segoe UI', 10))
+        style.configure('TLabel', background=self.colors['surface'], foreground=self.colors['text'])
+        style.configure('TButton', background=self.colors['surface'], foreground=self.colors['text'], borderwidth=0, padding=(14, 8))
+        style.map('TButton', background=[('active', self.colors['border'])])
+        style.configure('Accent.TButton', background=self.colors['accent'], foreground=self.colors['accent_fg'])
+        style.map('Accent.TButton', background=[('active', '#2563eb')])
+        style.configure('Danger.TButton', background=self.colors['danger'], foreground=self.colors['accent_fg'])
+        style.map('Danger.TButton', background=[('active', '#dc2626')])
+        style.configure('Thin.Horizontal.TScrollbar', troughcolor=self.colors['surface'], background=self.colors['border'])
+        style.configure('Thin.Vertical.TScrollbar', troughcolor=self.colors['surface'], background=self.colors['border'])
 
 
 if __name__ == '__main__':
