@@ -4,6 +4,7 @@ PC Control MCP Server - Main entry point.
 """
 
 import asyncio
+import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -99,6 +100,15 @@ if '--test-log' in sys.argv:
         print(f"DEBUG: Test logging enabled -> {TEST_LOG}")
     except Exception as _e:
         print(f"DEBUG: Failed to enable test logging: {_e}")
+
+# PID file management (single-instance helper)
+PID_FILE = Path(__file__).parent / 'server.pid'
+_HAS_PSUTIL = False
+try:
+    import psutil  # type: ignore
+    _HAS_PSUTIL = True
+except Exception:
+    _HAS_PSUTIL = False
 log = StructuredLogger(__name__)
 
 # Tool parameter models
@@ -894,6 +904,11 @@ class PCControlServer:
 async def main():
     """Main entry point."""
     try:
+        # Write PID file if possible
+        try:
+            PID_FILE.write_text(str(os.getpid()), encoding='utf-8')
+        except Exception:
+            pass
         print("DEBUG: Creating PCControlServer instance...")
         server = PCControlServer()
         print("DEBUG: Server instance created, starting run...")
@@ -910,4 +925,12 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    finally:
+        # Cleanup PID file on normal exit
+        try:
+            if PID_FILE.exists():
+                PID_FILE.unlink()
+        except Exception:
+            pass
