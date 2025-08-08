@@ -44,7 +44,7 @@ class SchedulerTools:
         """Create a scheduled task.
 
         Args:
-            name: Task name (e.g., \MyTask)
+            name: Task name (e.g., \\MyTask)
             command: Command to run
             schedule: ONEVENT|MINUTE|HOURLY|DAILY|WEEKLY|MONTHLY|ONCE|ONLOGON|ONIDLE|ONSTART
             start_time: HH:MM (24h) if applicable
