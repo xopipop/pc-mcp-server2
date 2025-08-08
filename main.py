@@ -73,6 +73,7 @@ from src import (
     ServiceTools,
     PowerShellTools,
     SchedulerTools,
+    UIATools,
     StructuredLogger,
     __version__
 )
@@ -192,6 +193,7 @@ class PCControlServer:
         self.service_tools = ServiceTools(self.security)
         self.powershell_tools = PowerShellTools(self.security)
         self.scheduler_tools = SchedulerTools(self.security)
+        self.uia_tools = UIATools(self.security)
         
         # Register handlers
         print("DEBUG: Registering tools...")
@@ -221,6 +223,42 @@ class PCControlServer:
                                 "description": "Type of information to retrieve"
                             }
                         }
+                    }
+                ),
+
+                # UI Automation (Windows)
+                Tool(
+                    name="uia_focus_window",
+                    description="Focus a window by name/class (Windows UIA)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "class_name": {"type": "string"}
+                        }
+                    }
+                ),
+                Tool(
+                    name="uia_click",
+                    description="Click a UI element by name/control type (Windows UIA)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "control_type": {"type": "string"}
+                        }
+                    }
+                ),
+                Tool(
+                    name="uia_type_text",
+                    description="Type text into focused/target control (Windows UIA)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "text": {"type": "string"},
+                            "name": {"type": "string"}
+                        },
+                        "required": ["text"]
                     }
                 ),
                 Tool(
@@ -627,6 +665,23 @@ class PCControlServer:
                     )
                 elif name == "scheduler_query_task":
                     result = await self.scheduler_tools.query_task(arguments["name"])
+
+                # UIA
+                elif name == "uia_focus_window":
+                    result = await self.uia_tools.focus_window(
+                        name=arguments.get("name"),
+                        class_name=arguments.get("class_name")
+                    )
+                elif name == "uia_click":
+                    result = await self.uia_tools.click(
+                        name=arguments.get("name"),
+                        control_type=arguments.get("control_type")
+                    )
+                elif name == "uia_type_text":
+                    result = await self.uia_tools.type_text(
+                        text=arguments["text"],
+                        name=arguments.get("name")
+                    )
                 
                 # Process tools
                 elif name == "list_processes":

@@ -60,6 +60,12 @@ try:
     _scheduler_exports = ['SchedulerTools']
 except ImportError:
     _scheduler_exports = []
+
+try:
+    from .tools import UIATools
+    _uia_exports = ['UIATools']
+except ImportError:
+    _uia_exports = []
     # AutomationTools requires pyautogui which needs tkinter
     _automation_exports = []
 
@@ -122,4 +128,4 @@ __all__ = [
     'AlertManager',
     'AlertRule'
 ] + _registry_exports + _automation_exports
-__all__ += _powershell_exports + _scheduler_exports
+__all__ += _powershell_exports + _scheduler_exports + _uia_exports
