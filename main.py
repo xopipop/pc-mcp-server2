@@ -305,7 +305,7 @@ class PCControlServer:
                         "properties": {
                             "script": {"type": "string"},
                             "timeout": {"type": "integer", "default": 30},
-                            "safe_mode": {"type": "boolean", "default": true}
+                            "safe_mode": {"type": "boolean", "default": True}
                         },
                         "required": ["script"]
                     }
@@ -345,7 +345,7 @@ class PCControlServer:
                         "type": "object",
                         "properties": {
                             "name": {"type": "string"},
-                            "force": {"type": "boolean", "default": false}
+                            "force": {"type": "boolean", "default": False}
                         },
                         "required": ["name"]
                     }
