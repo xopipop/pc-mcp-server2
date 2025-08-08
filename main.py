@@ -71,12 +71,23 @@ from src import (
     ProcessTools,
     FileTools,
     ServiceTools,
-    PowerShellTools,
-    SchedulerTools,
-    UIATools,
     StructuredLogger,
     __version__
 )
+
+# Optional tool imports (server must start even if these are missing)
+try:
+    from src import PowerShellTools  # type: ignore
+except Exception:
+    PowerShellTools = None  # type: ignore
+try:
+    from src import SchedulerTools  # type: ignore
+except Exception:
+    SchedulerTools = None  # type: ignore
+try:
+    from src import UIATools  # type: ignore
+except Exception:
+    UIATools = None  # type: ignore
 
 # Setup logging
 setup_logging()
@@ -191,9 +202,11 @@ class PCControlServer:
 
         # New tools (Windows-focused)
         self.service_tools = ServiceTools(self.security)
-        self.powershell_tools = PowerShellTools(self.security)
-        self.scheduler_tools = SchedulerTools(self.security)
-        self.uia_tools = UIATools(self.security)
+        self.powershell_tools = PowerShellTools(self.security) if PowerShellTools else None
+        self.scheduler_tools = SchedulerTools(self.security) if SchedulerTools else None
+        self.uia_tools = UIATools(self.security) if UIATools else None
+        print(f"DEBUG: Optional tools -> PowerShell: {self.powershell_tools is not None}, "
+              f"Scheduler: {self.scheduler_tools is not None}, UIA: {self.uia_tools is not None}")
         
         # Register handlers
         print("DEBUG: Registering tools...")
@@ -227,7 +240,7 @@ class PCControlServer:
                 ),
 
                 # UI Automation (Windows)
-                Tool(
+                *([] if not self.uia_tools else [Tool(
                     name="uia_focus_window",
                     description="Focus a window by name/class (Windows UIA)",
                     inputSchema={
@@ -260,7 +273,7 @@ class PCControlServer:
                         },
                         "required": ["text"]
                     }
-                ),
+                )]),
                 Tool(
                     name="get_hardware_info",
                     description="Get detailed hardware information",
@@ -297,7 +310,7 @@ class PCControlServer:
                 ),
 
                 # PowerShell (safe)
-                Tool(
+                *([] if not self.powershell_tools else [Tool(
                     name="invoke_powershell",
                     description="Safely execute a PowerShell script block (Windows only)",
                     inputSchema={
@@ -309,10 +322,10 @@ class PCControlServer:
                         },
                         "required": ["script"]
                     }
-                ),
+                )]),
 
                 # Scheduler
-                Tool(
+                *([] if not self.scheduler_tools else [Tool(
                     name="scheduler_create_task",
                     description="Create a Windows scheduled task (admin)",
                     inputSchema={
@@ -358,7 +371,7 @@ class PCControlServer:
                         "properties": {"name": {"type": "string"}},
                         "required": ["name"]
                     }
-                ),
+                )]),
                 
                 # Process Management
                 Tool(
@@ -639,6 +652,8 @@ class PCControlServer:
 
                 # PowerShell
                 elif name == "invoke_powershell":
+                    if not self.powershell_tools:
+                        raise ValueError("PowerShellTools is not available on this system")
                     result = await self.powershell_tools.invoke(
                         script=arguments["script"],
                         timeout=arguments.get("timeout", 30),
@@ -647,6 +662,8 @@ class PCControlServer:
 
                 # Scheduler
                 elif name == "scheduler_create_task":
+                    if not self.scheduler_tools:
+                        raise ValueError("SchedulerTools is not available on this system")
                     result = await self.scheduler_tools.create_task(
                         name=arguments["name"],
                         command=arguments["command"],
@@ -657,27 +674,39 @@ class PCControlServer:
                         password=arguments.get("password"),
                     )
                 elif name == "scheduler_run_task":
+                    if not self.scheduler_tools:
+                        raise ValueError("SchedulerTools is not available on this system")
                     result = await self.scheduler_tools.run_task(arguments["name"])
                 elif name == "scheduler_delete_task":
+                    if not self.scheduler_tools:
+                        raise ValueError("SchedulerTools is not available on this system")
                     result = await self.scheduler_tools.delete_task(
                         name=arguments["name"],
                         force=arguments.get("force", False)
                     )
                 elif name == "scheduler_query_task":
+                    if not self.scheduler_tools:
+                        raise ValueError("SchedulerTools is not available on this system")
                     result = await self.scheduler_tools.query_task(arguments["name"])
 
                 # UIA
                 elif name == "uia_focus_window":
+                    if not self.uia_tools:
+                        raise ValueError("UIATools is not available on this system")
                     result = await self.uia_tools.focus_window(
                         name=arguments.get("name"),
                         class_name=arguments.get("class_name")
                     )
                 elif name == "uia_click":
+                    if not self.uia_tools:
+                        raise ValueError("UIATools is not available on this system")
                     result = await self.uia_tools.click(
                         name=arguments.get("name"),
                         control_type=arguments.get("control_type")
                     )
                 elif name == "uia_type_text":
+                    if not self.uia_tools:
+                        raise ValueError("UIATools is not available on this system")
                     result = await self.uia_tools.type_text(
                         text=arguments["text"],
                         name=arguments.get("name")
