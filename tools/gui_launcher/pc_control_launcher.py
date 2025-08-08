@@ -5,6 +5,7 @@ import sys
 import os
 from pathlib import Path
 import shutil
+import psutil
 
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -65,12 +66,72 @@ class ServerProcess:
             self.out_q.put(line.rstrip('\n'))
         self.out_q.put("[process-exited]")
 
-    def stop(self) -> None:
+    def stop(self) -> list[int]:
+        stopped_pids: list[int] = []
+
+        # 1) Stop child process started by this launcher
         if self.proc and self.proc.poll() is None:
             try:
                 self.proc.terminate()
+                stopped_pids.append(self.proc.pid)
             except Exception:
                 pass
+
+        # 2) Stop process by server.pid if exists (handles orphan/background cases)
+        pid_file = self.project_root / 'server.pid'
+        try:
+            if pid_file.exists():
+                try:
+                    pid_text = pid_file.read_text(encoding='utf-8').strip()
+                    if pid_text:
+                        pid_value = int(pid_text)
+                        if psutil.pid_exists(pid_value):
+                            try:
+                                proc = psutil.Process(pid_value)
+                                # Avoid killing the launcher itself if ever same interpreter
+                                cmdline = ' '.join(proc.cmdline()) if proc.cmdline() else ''
+                                if 'pc_control_launcher.py' not in cmdline:
+                                    proc.terminate()
+                                    try:
+                                        proc.wait(timeout=5)
+                                    except psutil.TimeoutExpired:
+                                        proc.kill()
+                                    stopped_pids.append(pid_value)
+                            except Exception:
+                                pass
+                finally:
+                    try:
+                        pid_file.unlink()
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+        # 3) Additional safety: kill any python that matches this project and main.py
+        try:
+            project_str = str(self.project_root)
+            for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'exe']):
+                try:
+                    cmd = ' '.join(proc.info.get('cmdline') or [])
+                    exe_path = proc.info.get('exe') or ''
+                    if not cmd:
+                        continue
+                    if 'main.py' in cmd and project_str in cmd:
+                        # Skip our own launcher process if ever Python
+                        if 'pc_control_launcher.py' in cmd:
+                            continue
+                        proc.terminate()
+                        try:
+                            proc.wait(timeout=5)
+                        except psutil.TimeoutExpired:
+                            proc.kill()
+                        stopped_pids.append(proc.info['pid'])
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    continue
+        except Exception:
+            pass
+
+        return sorted(set(stopped_pids))
 
     def read_lines(self) -> list[str]:
         lines: list[str] = []
@@ -160,7 +221,11 @@ class LauncherApp(tk.Tk):
 
     def stop_server(self) -> None:
         self.append('Stopping server…', tag='WARN')
-        self.server.stop()
+        stopped = self.server.stop()
+        if stopped:
+            self.append(f'Stopped PIDs: {", ".join(str(p) for p in stopped)}', tag='INFO')
+        else:
+            self.append('Nothing to stop (no running process found)', tag='WARN')
         self.status.set('Stopped')
 
     def clear_output(self) -> None:
