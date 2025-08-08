@@ -48,7 +48,10 @@ from .tools import (
 try:
     from .tools import AutomationTools
     _automation_exports = ['AutomationTools']
-except ImportError as e:
+except ImportError:
+    # AutomationTools requires pyautogui which needs tkinter
+    _automation_exports = []
+
 try:
     from .tools import PowerShellTools
     _powershell_exports = ['PowerShellTools']
@@ -66,8 +69,6 @@ try:
     _uia_exports = ['UIATools']
 except ImportError:
     _uia_exports = []
-    # AutomationTools requires pyautogui which needs tkinter
-    _automation_exports = []
 
 # Conditional import for Windows-only tools
 try:
