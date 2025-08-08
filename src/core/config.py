@@ -161,6 +161,17 @@ class ConfigManager:
         print(f"DEBUG: Loaded config: {self.config}")
         self._apply_env_overrides()
         print("DEBUG: Applied env overrides")
+    
+    def __getattr__(self, name: str):
+        """Proxy attribute access to the underlying Config.
+        
+        This allows convenient access like manager.server instead of
+        manager.config.server while preserving the explicit .config API.
+        """
+        try:
+            return getattr(self.config, name)
+        except AttributeError as exc:
+            raise AttributeError(f"'ConfigManager' object has no attribute '{name}'") from exc
         
     def _resolve_config_path(self, config_path: Optional[Union[str, Path]]) -> Path:
         """Resolve configuration file path."""

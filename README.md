@@ -1,66 +1,61 @@
-# PC Control MCP Server v2.0
+# PC Control MCP Server v2.0 (RU)
 
-A secure and powerful PC Control MCP (Model Context Protocol) Server that provides comprehensive system control capabilities through a standardized interface.
+Надёжный MCP‑сервер (Model Context Protocol) для удалённого управления ПК через стандартный интерфейс. Интегрируется с Cursor IDE и другими MCP‑клиентами.
 
-## 🚀 Features
+## 🚀 Возможности
 
-### System Information
-- **Hardware Info**: CPU, memory, disk, network interfaces
-- **OS Details**: Version, platform, distribution info
-- **Real-time Metrics**: CPU usage, memory usage, disk I/O
-- **Environment Variables**: With sensitive data masking
-- **System Uptime**: Boot time and uptime statistics
+### Система
+- Аппаратная информация: CPU, память, диски, сети
+- Детали ОС: версия, платформа, дистрибутив
+- Переменные окружения (секреты маскируются)
+- Аптайм системы
 
-### Process Management
-- **List Processes**: With filtering and sorting capabilities
-- **Process Control**: Start, stop, suspend, resume processes
-- **Resource Monitoring**: CPU, memory, I/O usage per process
-- **Process Search**: Find processes by name or attributes
-- **Priority Management**: Adjust process priorities
+### Процессы
+- Список с фильтрами/сортировкой
+- Запуск/остановка/пауза/возобновление
+- Ресурсы процесса: CPU, память, I/O
+- Поиск по имени, управление приоритетом
 
-### File Operations
-- **File Management**: Read, write, copy, move, delete files
-- **Directory Operations**: List, create, search directories
-- **Advanced Search**: Glob and regex pattern matching
-- **Metadata Preservation**: Permissions, timestamps, ownership
-- **Disk Usage**: Monitor disk space and file sizes
+### Файлы
+- Чтение/запись/копирование/перемещение/удаление
+- Листинг директорий, создание
+- Поиск по маске/regex
+- Метаданные, использование диска
 
-### Security Features
-- **Path Validation**: Prevent path traversal attacks
-- **Input Sanitization**: Command and path validation
-- **Access Control**: Configurable allowed/blocked paths
-- **Audit Logging**: Track all operations
-- **Rate Limiting**: Prevent abuse
+### Безопасность
+- Валидация команд и путей, блок‑листы
+- Аудит‑логирование
+- Ограничение частоты запросов
 
-## 📋 Requirements
+## 📋 Требования
 
-- Python 3.8 or higher
-- Windows, Linux, or macOS
-- Administrator/root privileges for some operations
+- Windows (рекомендовано), также Linux/macOS
+- Python 3.8+ (проверено на 3.13)
+- Для части операций нужны права администратора
 
-## 🛠️ Installation
+## 🛠️ Установка
 
-### Using pip
+### Через pip
 ```bash
 pip install -r requirements.txt
 python setup.py install
 ```
 
-### Using virtual environment (recommended)
+### Виртуальное окружение (рекомендуется)
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## 🔧 Configuration
+## 🔧 Конфигурация
 
-The server uses YAML configuration files located in the `config/` directory:
+Файлы YAML‑конфигурации находятся в `config/`:
 
-- `default.yaml`: Main configuration
-- `security.yaml`: Security policies and rules
+- `default.yaml`: основная конфигурация
+- переопределения через переменные окружения (`PC_CONTROL_*`)
 
-### Basic Configuration
+### Пример (фрагмент)
 ```yaml
 server:
   name: "pc-control-mcp"
@@ -73,8 +68,8 @@ security:
     type: "none"  # none, basic, token
 ```
 
-### Security Configuration
-Configure allowed/blocked operations:
+### Политики безопасности
+Пример блок‑листов:
 ```yaml
 file_operations:
   blocked_paths:
@@ -86,102 +81,79 @@ process_management:
   blocked_processes: ["systemd", "init", "kernel"]
 ```
 
-## 🚀 Usage
+## 🚀 Запуск
 
-### Start the Server
+### Запуск сервера
 ```bash
 python main.py
 ```
 
-### Connect with MCP Client
-The server uses stdio transport. Configure your MCP client to connect:
+### Подключение MCP‑клиента (Cursor)
+Транспорт stdio. Проектный `.cursor/mcp.json` уже настроен на `.venv`:
 
 ```json
 {
   "mcpServers": {
-    "pc-control": {
-      "command": "python",
-      "args": ["path/to/main.py"],
-      "env": {}
+    "pc-control-mcp": {
+      "command": ".\\.venv\\Scripts\\python.exe",
+      "args": ["-u", "main.py"],
+      "env": { "PYTHONUNBUFFERED": "1" }
     }
   }
 }
 ```
 
-## 📚 Available Tools
+## 📚 Инструменты
 
-### System Information Tools
-- `get_system_info` - Get comprehensive system information
-- `get_hardware_info` - Get hardware details
-- `get_os_info` - Get operating system information
-- `get_environment_variables` - List environment variables
-- `get_system_uptime` - Get system uptime
-- `execute_command` - Execute system commands
+### Система
+- `get_system_info`, `get_hardware_info`, `get_os_info`
+- `get_environment_variables`, `get_system_uptime`, `execute_command`
 
-### Process Management Tools
-- `list_processes` - List running processes
-- `get_process_info` - Get detailed process information
-- `kill_process` - Terminate a process
-- `start_process` - Start a new process
-- `suspend_process` - Suspend a process
-- `resume_process` - Resume a suspended process
-- `get_process_resources` - Get process resource usage
-- `find_processes_by_name` - Find processes by name
+### Процессы
+- `list_processes`, `get_process_info`, `kill_process`, `start_process`
+- `suspend_process`, `resume_process`, `get_process_resources`
+- `find_processes_by_name`, `set_process_priority`, `limit_process_resources`
 
-### File Operation Tools
-- `read_file` - Read file contents
-- `write_file` - Write content to file
-- `delete_file` - Delete a file
-- `copy_file` - Copy a file
-- `move_file` - Move a file
-- `list_directory` - List directory contents
-- `create_directory` - Create a directory
-- `get_file_info` - Get file metadata
-- `search_files` - Search for files
-- `get_disk_usage` - Get disk usage information
+### Файлы
+- `read_file`, `write_file`, `delete_file`, `copy_file`, `move_file`
+- `list_directory`, `create_directory`, `get_file_info`, `search_files`, `get_disk_usage`
 
-## 🔒 Security
+## 🔒 Безопасность
 
-### Access Control
-- Path-based access control for file operations
-- Process whitelist/blacklist
-- Command validation and sanitization
+### Контроль доступа
+- Блок‑листы путей и процессов
+- Валидация и санитизация входных данных
 
-### Audit Logging
-All operations are logged with:
-- Timestamp
-- Operation type
-- User/session info
-- Operation result
-- Error details (if any)
+### Аудит‑логирование
+Фиксируются: время, тип операции, пользователь/сессия, результат, ошибки.
 
-### Best Practices
-1. Run with minimal required privileges
-2. Configure strict access controls
-3. Enable audit logging
-4. Use authentication in production
-5. Regularly review audit logs
+### Рекомендации
+1. Минимально необходимые привилегии
+2. Строгие блок‑листы
+3. Включённый аудит
+4. Аутентификация в проде
+5. Регулярный пересмотр логов
 
-## 🧪 Testing
+## 🧪 Тестирование
 
-Run the test suite:
+Запуск тестов:
 ```bash
 pytest tests/
 ```
 
-With coverage:
+Покрытие:
 ```bash
 pytest --cov=src tests/
 ```
 
-## 📈 Performance
+## 📈 Производительность
 
-- Asynchronous operations for better performance
-- Efficient file streaming for large files
-- Process caching to reduce system calls
-- Configurable timeouts and limits
+- Асинхронные операции
+- Эффективная работа с большими файлами
+- Кэширование данных процессов
+- Настраиваемые таймауты и лимиты
 
-## 🤝 Contributing
+## 🤝 Вклад
 
 1. Fork the repository
 2. Create a feature branch
@@ -190,30 +162,27 @@ pytest --cov=src tests/
 5. Ensure all tests pass
 6. Submit a pull request
 
-## 📝 License
+## 📝 Лицензия
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT — см. `LICENSE`.
 
-## ⚠️ Disclaimer
+## ⚠️ Дисклеймер
 
-This server provides powerful system control capabilities. Use with caution and ensure proper security measures are in place. The authors are not responsible for any damage or data loss resulting from the use of this software.
+Сервер предоставляет мощные операции по управлению системой. Используйте с осторожностью и только при корректно настроенной безопасности.
 
-## 📞 Support
+## 📞 Поддержка
 
-- GitHub Issues: [Report bugs or request features]
-- Documentation: See the `docs/` directory
-- Examples: Check the `examples/` directory
+- Issues на GitHub
+- Документация — директория `docs/`
 
-## 🔄 Changelog
+## 🔄 Изменения
 
 ### v2.0.0 (2024)
-- Complete rewrite with modular architecture
-- Enhanced security features
-- Comprehensive tool coverage
-- Improved error handling
-- Better logging and monitoring
+- Упрощённый запуск: один `main.py`, `run.bat`
+- Совместимость с разными версиями MCP
+- Улучшенное логирование и обработка ошибок
 
-### v1.0.0 (Initial Release)
-- Basic system control functionality
-- Simple file operations
-- Process management
+### v1.0.0
+- Базовые операции управления системой
+- Файловые операции
+- Управление процессами

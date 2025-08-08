@@ -14,6 +14,52 @@ sys.path.insert(0, str(Path(__file__).parent))
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.server.models import InitializationOptions
+_HAS_MCP_CAP_MODELS = False
+NotificationOptions = None  # type: ignore
+ExperimentalCapabilities = None  # type: ignore
+try:
+    # Preferred location (newer versions)
+    from mcp.server.models import NotificationOptions as _NO1, ExperimentalCapabilities as _EC1  # type: ignore
+    NotificationOptions = _NO1  # type: ignore
+    ExperimentalCapabilities = _EC1  # type: ignore
+    _HAS_MCP_CAP_MODELS = True
+except Exception:
+    try:
+        # Fallback location (some versions expose via mcp.types)
+        from mcp.types import NotificationOptions as _NO2, ExperimentalCapabilities as _EC2  # type: ignore
+        NotificationOptions = _NO2  # type: ignore
+        ExperimentalCapabilities = _EC2  # type: ignore
+        _HAS_MCP_CAP_MODELS = True
+    except Exception:
+        _HAS_MCP_CAP_MODELS = False
+
+# Define compatibility shims if models are unavailable
+if not _HAS_MCP_CAP_MODELS:
+    class NotificationOptions:  # type: ignore[no-redef]
+        def __init__(self,
+                     tools_changed: bool = False,
+                     prompts_changed: bool = False,
+                     resources_changed: bool = False,
+                     models_changed: bool = False,
+                     sampling_chains_changed: bool = False,
+                     **kwargs):
+            self.tools_changed = tools_changed
+            self.prompts_changed = prompts_changed
+            self.resources_changed = resources_changed
+            self.models_changed = models_changed
+            self.sampling_chains_changed = sampling_chains_changed
+        
+        def __getattr__(self, _name: str):
+            # Default to False for any unknown change flags
+            return False
+    
+    class ExperimentalCapabilities:  # type: ignore[no-redef]
+        def __init__(self, **_kwargs):
+            pass
+        
+        def __getattr__(self, _name: str):
+            # Default to None for unknown experimental fields
+            return None
 from mcp.types import Tool, TextContent, ImageContent
 from pydantic import BaseModel, Field
 
@@ -629,13 +675,19 @@ class PCControlServer:
                 log.info("Stdio server initialized")
                 
                 print(f"DEBUG: Running server...")
+                # Always provide capability objects (real classes if available, shims otherwise)
+                capabilities = self.server.get_capabilities(
+                    NotificationOptions(),
+                    {}
+                )
+
                 await self.server.run(
                     read_stream,
                     write_stream,
                     InitializationOptions(
                         server_name=self.config.server.name,
                         server_version=self.config.server.version,
-                        capabilities=self.server.get_capabilities()
+                        capabilities=capabilities
                     )
                 )
                 print(f"DEBUG: Server finished")
