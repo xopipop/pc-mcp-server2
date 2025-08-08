@@ -216,6 +216,7 @@ class LauncherApp(tk.Tk):
             'accent': '#3b82f6',
             'accent_fg': '#ffffff',
             'danger': '#ef4444',
+            'error': '#ef4444',
             'warn': '#f59e0b',
             'info': '#60a5fa',
         }
