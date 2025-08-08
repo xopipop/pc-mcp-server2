@@ -70,6 +70,9 @@ from src import (
     SystemTools,
     ProcessTools,
     FileTools,
+    ServiceTools,
+    PowerShellTools,
+    SchedulerTools,
     StructuredLogger,
     __version__
 )
@@ -184,6 +187,11 @@ class PCControlServer:
         
         self.file_tools = FileTools(self.security)
         print("DEBUG: FileTools created")
+
+        # New tools (Windows-focused)
+        self.service_tools = ServiceTools(self.security)
+        self.powershell_tools = PowerShellTools(self.security)
+        self.scheduler_tools = SchedulerTools(self.security)
         
         # Register handlers
         print("DEBUG: Registering tools...")
@@ -247,6 +255,70 @@ class PCControlServer:
                             "working_directory": {"type": "string"}
                         },
                         "required": ["command"]
+                    }
+                ),
+
+                # PowerShell (safe)
+                Tool(
+                    name="invoke_powershell",
+                    description="Safely execute a PowerShell script block (Windows only)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "script": {"type": "string"},
+                            "timeout": {"type": "integer", "default": 30},
+                            "safe_mode": {"type": "boolean", "default": true}
+                        },
+                        "required": ["script"]
+                    }
+                ),
+
+                # Scheduler
+                Tool(
+                    name="scheduler_create_task",
+                    description="Create a Windows scheduled task (admin)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "command": {"type": "string"},
+                            "schedule": {"type": "string", "default": "ONCE"},
+                            "start_time": {"type": "string"},
+                            "start_date": {"type": "string"},
+                            "run_as": {"type": "string"},
+                            "password": {"type": "string"}
+                        },
+                        "required": ["name", "command"]
+                    }
+                ),
+                Tool(
+                    name="scheduler_run_task",
+                    description="Run a Windows scheduled task now (admin)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {"name": {"type": "string"}},
+                        "required": ["name"]
+                    }
+                ),
+                Tool(
+                    name="scheduler_delete_task",
+                    description="Delete a Windows scheduled task (admin)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "force": {"type": "boolean", "default": false}
+                        },
+                        "required": ["name"]
+                    }
+                ),
+                Tool(
+                    name="scheduler_query_task",
+                    description="Query a Windows scheduled task (admin)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {"name": {"type": "string"}},
+                        "required": ["name"]
                     }
                 ),
                 
@@ -526,6 +598,35 @@ class PCControlServer:
                         timeout=params.timeout,
                         working_directory=params.working_directory
                     )
+
+                # PowerShell
+                elif name == "invoke_powershell":
+                    result = await self.powershell_tools.invoke(
+                        script=arguments["script"],
+                        timeout=arguments.get("timeout", 30),
+                        safe_mode=arguments.get("safe_mode", True)
+                    )
+
+                # Scheduler
+                elif name == "scheduler_create_task":
+                    result = await self.scheduler_tools.create_task(
+                        name=arguments["name"],
+                        command=arguments["command"],
+                        schedule=arguments.get("schedule", "ONCE"),
+                        start_time=arguments.get("start_time"),
+                        start_date=arguments.get("start_date"),
+                        run_as=arguments.get("run_as"),
+                        password=arguments.get("password"),
+                    )
+                elif name == "scheduler_run_task":
+                    result = await self.scheduler_tools.run_task(arguments["name"])
+                elif name == "scheduler_delete_task":
+                    result = await self.scheduler_tools.delete_task(
+                        name=arguments["name"],
+                        force=arguments.get("force", False)
+                    )
+                elif name == "scheduler_query_task":
+                    result = await self.scheduler_tools.query_task(arguments["name"])
                 
                 # Process tools
                 elif name == "list_processes":

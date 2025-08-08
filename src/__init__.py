@@ -49,6 +49,17 @@ try:
     from .tools import AutomationTools
     _automation_exports = ['AutomationTools']
 except ImportError as e:
+try:
+    from .tools import PowerShellTools
+    _powershell_exports = ['PowerShellTools']
+except ImportError:
+    _powershell_exports = []
+
+try:
+    from .tools import SchedulerTools
+    _scheduler_exports = ['SchedulerTools']
+except ImportError:
+    _scheduler_exports = []
     # AutomationTools requires pyautogui which needs tkinter
     _automation_exports = []
 
@@ -111,3 +122,4 @@ __all__ = [
     'AlertManager',
     'AlertRule'
 ] + _registry_exports + _automation_exports
+__all__ += _powershell_exports + _scheduler_exports
