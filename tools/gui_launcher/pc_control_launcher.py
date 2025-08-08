@@ -4,6 +4,7 @@ import queue
 import sys
 import os
 from pathlib import Path
+import shutil
 
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -16,13 +17,37 @@ class ServerProcess:
         self.out_q: queue.Queue[str] = queue.Queue()
         self._reader_thread: threading.Thread | None = None
 
+    def _resolve_python_cmd(self) -> list[str] | None:
+        """Resolve a Python interpreter command that is NOT this launcher.
+
+        Preference order:
+        1) Project venv: .venv/Scripts/python.exe
+        2) Windows Python Launcher: py -3
+        3) python from PATH
+        """
+        # Prefer project venv
+        venv_py = self.project_root / '.venv' / 'Scripts' / 'python.exe'
+        if venv_py.exists():
+            return [str(venv_py)]
+
+        # Try Windows Python Launcher
+        if shutil.which('py'):
+            return ['py', '-3']
+
+        # Try python from PATH
+        if shutil.which('python'):
+            return ['python']
+
+        return None
+
     def start(self) -> None:
         if self.proc and self.proc.poll() is None:
             return
-        python_exe = Path('.venv/Scripts/python.exe')
-        if not python_exe.exists():
-            python_exe = sys.executable
-        cmd = [str(python_exe), '-u', 'main.py', '--test-log']
+        cmd_base = self._resolve_python_cmd()
+        if not cmd_base:
+            messagebox.showerror('Python not found', 'Не найден интерпретатор Python (ни .venv, ни py, ни python в PATH).')
+            return
+        cmd = [*cmd_base, '-u', 'main.py', '--test-log']
         self.proc = subprocess.Popen(
             cmd,
             cwd=self.project_root,
@@ -63,10 +88,31 @@ class LauncherApp(tk.Tk):
         self.title('PC Control MCP - Launcher')
         self.geometry('900x600')
         self.minsize(700, 400)
-        self.project_root = Path(__file__).resolve().parents[2]
+        self.project_root = self._detect_project_root()
         self.server = ServerProcess(self.project_root)
         self._build_ui()
         self.after(200, self._poll_output)
+
+    def _detect_project_root(self) -> Path:
+        """Detect project root robustly for source and frozen builds.
+
+        - Source run: use repo structure (two parents up).
+        - Frozen (PyInstaller): prefer folder with main.py; if running from dist/, go up one.
+        """
+        try:
+            if getattr(sys, 'frozen', False):  # running as bundled exe
+                exe_dir = Path(sys.executable).resolve().parent
+                # If exe is in project root
+                if (exe_dir / 'main.py').exists() or (exe_dir / 'config').exists():
+                    return exe_dir
+                # If exe is in dist/ under project root
+                if exe_dir.name.lower() == 'dist' and (exe_dir.parent / 'main.py').exists():
+                    return exe_dir.parent
+                return exe_dir
+            # Source run
+            return Path(__file__).resolve().parents[2]
+        except Exception:
+            return Path.cwd()
 
     def _build_ui(self) -> None:
         frm = ttk.Frame(self)
