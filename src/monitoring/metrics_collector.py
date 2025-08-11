@@ -227,8 +227,8 @@ class MetricsCollector:
     
     # Collector implementations
     def _collect_cpu_percent(self) -> float:
-        """Collect CPU usage percentage."""
-        return psutil.cpu_percent(interval=1)
+        """Collect CPU usage percentage without blocking the event loop."""
+        return psutil.cpu_percent(interval=0)
     
     def _collect_memory_percent(self) -> float:
         """Collect memory usage percentage."""

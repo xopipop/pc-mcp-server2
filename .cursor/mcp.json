@@ -4,7 +4,8 @@
       "command": ".\\.venv\\Scripts\\python.exe",
       "args": [
         "-u",
-        "main.py"
+        "main.py",
+        "--test-log"
       ],
       "env": {
         "PYTHONUNBUFFERED": "1"
@@ -12,4 +13,3 @@
     }
   }
 }
-

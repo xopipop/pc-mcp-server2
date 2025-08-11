@@ -246,7 +246,6 @@ class FileTools:
             Dictionary with operation result
         """
         log.debug(f"Writing file: {path}", append=append, create_dirs=create_dirs)
-        print(f"DEBUG: write_file called - path: {path}, content_length: {len(content)}, append: {append}")
         
         try:
             # Normalize and validate path

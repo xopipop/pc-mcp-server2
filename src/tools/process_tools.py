@@ -139,7 +139,6 @@ class ProcessTools:
             List of process information dictionaries
         """
         log.debug("Listing processes", filters=filters)
-        print(f"DEBUG: list_processes called with filters: {filters}")
         
         try:
             # Security check
@@ -150,7 +149,7 @@ class ProcessTools:
             # Get all processes
             processes = []
             
-            print("DEBUG: Iterating through psutil.process_iter()...")
+            # iterating processes
             for proc in psutil.process_iter(['pid', 'name', 'username', 'status', 
                                             'cpu_percent', 'memory_percent', 
                                             'create_time', 'ppid']):

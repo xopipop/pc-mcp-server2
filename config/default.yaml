@@ -2,18 +2,19 @@ server:
   name: "pc-control-mcp"
   version: "2.0.0"
   log_level: "INFO"
+  pretty_json: false
   max_connections: 10
 
 security:
-  enabled: true
+  enabled: false
   authentication:
     type: "none"  # none, basic, token
     token_expiry: 3600
   authorization:
     allowed_commands: []
     blocked_paths: []
-    max_file_size: 104857600  # 100MB
-    command_timeout: 30
+    max_file_size: 1073741824  # 1GB
+    command_timeout: 300
   audit:
     enabled: true
     log_all_operations: true
@@ -21,8 +22,8 @@ security:
 
 gui_automation:
   enabled: true
-  safe_mode: true
-  failsafe: true
+  safe_mode: false
+  failsafe: false
   min_delay: 0.1
   max_screen_resolution: [1920, 1080]
   screenshot_directory: "~/.pc_control_mcp/screenshots"
@@ -59,12 +60,7 @@ network:
 
 file_operations:
   allowed_paths: []
-  blocked_paths: 
-    - "/etc"
-    - "/sys"
-    - "/proc"
-    - "C:\\Windows\\System32"
-    - "C:\\Program Files"
-  max_file_size: 104857600  # 100MB
+  blocked_paths: []
+  max_file_size: 1073741824  # 1GB
   allowed_extensions: []
-  blocked_extensions: [".exe", ".dll", ".sys", ".bat", ".cmd"]
+  blocked_extensions: []

@@ -131,6 +131,7 @@ class ServerConfig(BaseModel):
     version: str = Field(default="2.0.0")
     log_level: str = Field(default="INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
     max_connections: int = Field(default=10, gt=0)
+    pretty_json: bool = Field(default=False)
 
 
 class Config(BaseModel):
@@ -154,13 +155,13 @@ class ConfigManager:
             config_path: Path to configuration file. If not provided,
                         will look for config/default.yaml
         """
-        print(f"DEBUG: ConfigManager.__init__(config_path={config_path})")
+        log.debug("ConfigManager.__init__", config_path=str(config_path))
         self.config_path = self._resolve_config_path(config_path)
-        print(f"DEBUG: Resolved config_path: {self.config_path}")
+        log.debug("Resolved config path", path=str(self.config_path))
         self.config = self._load_config()
-        print(f"DEBUG: Loaded config: {self.config}")
+        log.debug("Loaded config")
         self._apply_env_overrides()
-        print("DEBUG: Applied env overrides")
+        log.debug("Applied env overrides")
     
     def __getattr__(self, name: str):
         """Proxy attribute access to the underlying Config.
@@ -236,13 +237,23 @@ class ConfigManager:
         for key in path[:-1]:
             obj = getattr(obj, key)
         
-        # Convert value to appropriate type
-        field_type = obj.__fields__[path[-1]].type_
-        if field_type == bool:
-            value = value.lower() in ('true', '1', 'yes', 'on')
-        elif field_type == int:
+        # Convert value to appropriate type (support Pydantic v2)
+        try:
+            field_info = obj.model_fields[path[-1]]  # type: ignore[attr-defined]
+            py_type = field_info.annotation  # type: ignore[attr-defined]
+        except Exception:
+            # Fallback to v1 API
+            try:
+                field_info = obj.__fields__[path[-1]]  # type: ignore[attr-defined]
+                py_type = getattr(field_info, 'type_', None)
+            except Exception:
+                py_type = None
+
+        if py_type in (bool, 'bool'):
+            value = str(value).lower() in ('true', '1', 'yes', 'on')
+        elif py_type in (int, 'int'):
             value = int(value)
-        elif field_type == float:
+        elif py_type in (float, 'float'):
             value = float(value)
         
         setattr(obj, path[-1], value)
@@ -322,9 +333,9 @@ def get_config() -> ConfigManager:
     """Get global configuration manager instance."""
     global _config_manager
     if _config_manager is None:
-        print("DEBUG: Creating new ConfigManager instance")
+        log.debug("Creating new ConfigManager instance")
         _config_manager = ConfigManager()
-        print(f"DEBUG: ConfigManager created with config: {_config_manager.config}")
+        log.debug("ConfigManager created")
     return _config_manager
 
 

@@ -33,7 +33,7 @@ class LoggerConfig:
         return {
             'server': {
                 'log_level': 'INFO',
-                'log_format': '{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}'
+                'log_format': '{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message} | {extra}'
             }
         }
     
@@ -45,7 +45,7 @@ class LoggerConfig:
         # Get log level from config
         log_level = self.config.get('server', {}).get('log_level', 'INFO')
         log_format = self.config.get('server', {}).get('log_format', 
-            '{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}')
+            '{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message} | {extra}')
         
         # Console handler
         logger.add(
@@ -53,8 +53,9 @@ class LoggerConfig:
             format=log_format,
             level=log_level,
             colorize=True,
-            backtrace=True,
-            diagnose=True
+            backtrace=(log_level == 'DEBUG'),
+            diagnose=(log_level == 'DEBUG'),
+            enqueue=True
         )
         
         # File handler
@@ -67,9 +68,10 @@ class LoggerConfig:
             retention='30 days',
             format=log_format,
             level=log_level,
-            backtrace=True,
-            diagnose=True,
-            compression='zip'
+            backtrace=(log_level == 'DEBUG'),
+            diagnose=(log_level == 'DEBUG'),
+            compression='zip',
+            enqueue=True
         )
         
         # Audit log handler
@@ -78,7 +80,7 @@ class LoggerConfig:
                 log_dir / 'audit_{time:YYYY-MM-DD}.log',
                 rotation='1 day',
                 retention='30 days',
-                format='{time:YYYY-MM-DD HH:mm:ss} | AUDIT | {message}',
+                format='{time:YYYY-MM-DD HH:mm:ss} | AUDIT | {message} | {extra}',
                 level='INFO',
                 filter=lambda record: 'audit' in record['extra'],
                 compression='zip'
@@ -200,7 +202,7 @@ def enable_test_logging(project_root: Optional[Union[str, Path]] = None,
     verbose_format = (
         '{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | '
         '{process.name}:{process.id} | {thread.name}:{thread.id} | '
-        '{name}:{function}:{line} - {message}'
+        '{name}:{function}:{line} - {message} | {extra}'
     )
 
     # Add extra sink

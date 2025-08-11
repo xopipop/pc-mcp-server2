@@ -91,18 +91,14 @@ class SystemTools:
     async def _get_basic_info(self) -> Dict[str, Any]:
         """Get basic system information."""
         log.debug("Getting basic system info...")
-        print("DEBUG: _get_basic_info() called")
         
         try:
             basic_info = get_basic_system_info()
-            print(f"DEBUG: get_basic_system_info returned: {basic_info}")
             
             # Add additional info
             boot_time = psutil.boot_time()
-            print(f"DEBUG: boot_time: {boot_time}")
             
             users = psutil.users()
-            print(f"DEBUG: users: {users}")
             
             additional_info = {
                 'boot_time': datetime.fromtimestamp(boot_time).isoformat(),
@@ -111,19 +107,15 @@ class SystemTools:
                 'system_encoding': sys.getdefaultencoding(),
                 'file_system_encoding': sys.getfilesystemencoding()
             }
-            print(f"DEBUG: additional_info: {additional_info}")
+            # additional_info prepared
             
             basic_info.update(additional_info)
             
-            print(f"DEBUG: final basic_info: {basic_info}")
             log.debug(f"Basic system info: {basic_info}")
             
             return basic_info
             
         except Exception as e:
-            print(f"DEBUG: Error in _get_basic_info: {type(e).__name__}: {e}")
-            import traceback
-            traceback.print_exc()
             raise
     
     async def _get_cpu_info(self) -> Dict[str, Any]:
@@ -134,8 +126,8 @@ class SystemTools:
         return {
             'physical_cores': psutil.cpu_count(logical=False),
             'logical_cores': psutil.cpu_count(logical=True),
-            'cpu_percent': psutil.cpu_percent(interval=1),
-            'cpu_percent_per_core': psutil.cpu_percent(interval=1, percpu=True),
+            'cpu_percent': psutil.cpu_percent(interval=0),
+            'cpu_percent_per_core': psutil.cpu_percent(interval=0, percpu=True),
             'cpu_frequency': {
                 'current': cpu_freq.current if cpu_freq else None,
                 'min': cpu_freq.min if cpu_freq else None,
@@ -548,13 +540,26 @@ class SystemTools:
             if timeout is None:
                 timeout = self.config.get('security.authorization.command_timeout', 30)
             
-            # Execute command
-            process = await asyncio.create_subprocess_shell(
-                validated_command,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                cwd=working_directory
-            )
+            # Execute command (prefer exec without shell when possible)
+            if shell:
+                process = await asyncio.create_subprocess_shell(
+                    validated_command,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=working_directory
+                )
+            else:
+                import shlex
+                # Windows needs posix=False for proper splitting
+                args = shlex.split(validated_command, posix=(os.name != 'nt'))
+                if not args:
+                    raise SystemException("Empty command after parsing")
+                process = await asyncio.create_subprocess_exec(
+                    *args,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=working_directory
+                )
             
             try:
                 stdout, stderr = await asyncio.wait_for(

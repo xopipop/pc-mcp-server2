@@ -56,11 +56,27 @@ class AutomationTools:
         self.security = security_manager
         self.config = get_config()
         
-        # Configure from config
-        config_settings = self.config.get('gui_automation', {})
-        if PYAUTOGUI_AVAILABLE:
-            pyautogui.PAUSE = config_settings.get('default_pause', 0.1)
-            pyautogui.FAILSAFE = config_settings.get('fail_safe', True)
+        # Configure from config (handle Pydantic model or dict)
+        settings = self.config.get('gui_automation', None)
+        if PYAUTOGUI_AVAILABLE and settings is not None:
+            try:
+                # Pydantic model attributes in our config: min_delay, failsafe
+                pause_val = getattr(settings, 'min_delay', None)
+                failsafe_val = getattr(settings, 'failsafe', None)
+                if pause_val is None or failsafe_val is None:
+                    # Fallback if settings is a dict-like
+                    try:
+                        pause_val = settings.get('min_delay', 0.1)  # type: ignore[attr-defined]
+                        failsafe_val = settings.get('failsafe', True)  # type: ignore[attr-defined]
+                    except Exception:
+                        pause_val = 0.1
+                        failsafe_val = True
+                pyautogui.PAUSE = 0.0 if pause_val is None else float(pause_val)
+                pyautogui.FAILSAFE = True if failsafe_val is None else bool(failsafe_val)
+            except Exception:
+                # Safe defaults
+                pyautogui.PAUSE = 0.1
+                pyautogui.FAILSAFE = True
         
         # Screen size cache
         self._screen_size = None
